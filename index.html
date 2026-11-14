@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Anivix">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="robots" content="noindex">
+<title>Anivix</title>
+<style>
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top, 0px);padding-bottom:env(safe-area-inset-bottom, 0px)}
+body{margin:0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+/* Layout: one centered column under a frosted bar. Large quiet headlines, soft gray tiles, and a single blue reserved for the action to take. */
+:root{
+--bg:#FFFFFF; --surface:#F5F5F7; --ink:#1D1D1F; --muted:#6E6E73; --line:#D2D2D7;
+--accent:#0071E3; --accent-ink:#FFFFFF; --link:#0066CC; --bar:rgba(255,255,255,.72);
+--good:#1B7F3B; --warn:#B25000; --crit:#D70015;
+--display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue","Segoe UI",Roboto,sans-serif;
+--body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue","Segoe UI",Roboto,sans-serif;
+--r:18px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+--bg:#000000; --surface:#1D1D1F; --ink:#F5F5F7; --muted:#A1A1A6; --line:#424245;
+--accent:#0A84FF; --accent-ink:#FFFFFF; --link:#2997FF; --bar:rgba(22,22,23,.72);
+--good:#30D158; --warn:#FF9F0A; --crit:#FF453A; color-scheme:dark } }
+:root[data-theme="dark"]{
+--bg:#000000; --surface:#1D1D1F; --ink:#F5F5F7; --muted:#A1A1A6; --line:#424245;
+--accent:#0A84FF; --accent-ink:#FFFFFF; --link:#2997FF; --bar:rgba(22,22,23,.72);
+--good:#30D158; --warn:#FF9F0A; --crit:#FF453A; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.47;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+.bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:9;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.bar div{max-width:680px;margin:0 auto;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+padding-left:max(20px, env(safe-area-inset-left, 0px));padding-right:max(20px, env(safe-area-inset-right, 0px))}
+.brand{font-family:var(--display);font-weight:600;font-size:1.1rem;letter-spacing:-.02em}
+.status{font-size:.75rem;color:var(--muted);text-align:right;margin:0}
+.app{max-width:680px;margin:0 auto;padding-block:8px 120px;
+padding-left:max(20px, env(safe-area-inset-left, 0px));padding-right:max(20px, env(safe-area-inset-right, 0px));
+display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+h1{font-size:clamp(2.5rem,10vw,3.5rem);font-weight:600;letter-spacing:-.03em;line-height:1.07}
+h2{font-size:1.75rem;font-weight:600;letter-spacing:-.02em;line-height:1.14}
+h3{font-size:1.06rem;font-weight:600;letter-spacing:-.015em;line-height:1.25}
+p{margin:0}
+.banner{font-size:.8rem;color:var(--muted);text-align:center;background:var(--surface);border-radius:980px;padding:8px 16px;align-self:center;margin-top:12px}
+.hero{text-align:center;padding-block:28px 4px;display:flex;flex-direction:column;gap:8px}
+.hero .sub{font-family:var(--display);font-size:1.4rem;color:var(--muted);letter-spacing:-.015em;line-height:1.2}
+section.tab{display:flex;flex-direction:column;gap:24px}
+section.tab:not(#tab-today){padding-top:28px}
+.block{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--surface);border-radius:var(--r);padding:24px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.first{padding:32px 24px;gap:10px;text-align:center;align-items:center}
+.first h2{font-size:clamp(1.75rem,7vw,2.5rem);letter-spacing:-.025em;overflow-wrap:anywhere}
+.eyebrow{font-size:.8rem;font-weight:600;color:var(--warn)}
+.eyebrow.plain{color:var(--muted)}
+.body{white-space:pre-wrap;overflow-wrap:anywhere}
+label{font-size:.8rem;font-weight:600;color:var(--muted)}
+textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 14px;min-width:0;resize:vertical;min-height:80px}
+:focus-visible{outline:4px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:1px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.center{justify-content:center}
+button,.btn{font:inherit;font-size:1rem;border-radius:980px;padding:10px 20px;border:1px solid var(--accent);
+background:transparent;color:var(--link);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px}
+button.primary,.btn.primary{background:var(--accent);color:var(--accent-ink)}
+button:disabled{opacity:.45;cursor:default}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:.85rem;padding:8px 14px;min-height:36px;border:0;background:var(--surface);color:var(--ink)}
+.fine{font-size:.75rem;color:var(--muted);line-height:1.4}
+.meta{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+.center{text-align:center}
+.list{display:flex;flex-direction:column;gap:12px}
+.item{background:var(--surface);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.item .head{display:flex;gap:12px;align-items:baseline;justify-content:space-between}
+.item .head h3{min-width:0;overflow-wrap:anywhere}
+.pill{font-size:.75rem;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.crit{color:var(--crit)} .pill.warn{color:var(--warn)} .pill.plain{color:var(--muted)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent);
+padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom, 0px));
+padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+nav.tabs div{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+nav.tabs button{border:0;border-radius:10px;color:var(--muted);font-size:.8rem;min-height:48px;padding:6px 4px}
+nav.tabs button[aria-current=page]{color:var(--link);font-weight:600}
+.msgs{display:flex;flex-direction:column;gap:10px;min-height:40vh}
+.msg{max-width:88%;padding:10px 15px;border-radius:20px;overflow-wrap:anywhere;white-space:pre-wrap;display:flex;flex-direction:column;gap:8px}
+.msg.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:6px}
+.msg.a{align-self:flex-start;background:var(--surface);border-bottom-left-radius:6px}
+.msg.note{align-self:center;background:transparent;color:var(--muted);font-size:.85rem;text-align:center;padding:2px 8px}
+.msg .btn{align-self:flex-start;white-space:normal}
+.composer{position:sticky;bottom:calc(58px + env(safe-area-inset-bottom, 0px));background:var(--bg);padding-block:10px;display:flex;flex-direction:column;gap:8px}
+.composer .row{flex-wrap:nowrap;align-items:flex-end}
+.composer textarea{min-height:46px;max-height:140px;border-radius:22px;resize:none}
+@media (prefers-reduced-motion:no-preference){ .msg{animation:rise .3s cubic-bezier(.2,.7,.2,1)} @keyframes rise{from{transform:translateY(8px)}to{transform:none}} }
+</style>
+<header class="bar"><div>
+<span class="brand">Anivix</span>
+<p class="status" id="status"></p>
+</div></header>
+<div class="app">
+<p class="banner" id="banner" hidden></p>
+<section class="tab" id="tab-today">
+<div class="hero"><h1 id="greet">Hello.</h1><p class="sub" id="heroSub">Here's your plan.</p></div>
+<div class="card first" id="first"></div>
+<div class="block" id="thenBlock">
+<h2>Then</h2>
+<div class="list" id="then"></div>
+<p class="meta" id="planFoot"></p>
+</div>
+<div class="block">
+<h2>Email</h2>
+<div class="card" id="email"></div>
+</div>
+<div class="block">
+<div class="row center"><button id="refreshBtn" data-act="refresh">Check again</button></div>
+<p class="meta center" id="updated" role="status"></p>
+</div>
+</section>
+<section class="tab" id="tab-messages" hidden>
+<h2>Messages</h2>
+<div class="card" id="msgCard"></div>
+<div class="row center"><button class="primary" data-act="check-messages">Check now</button></div>
+<p class="fine center">Anivix reads the chat lists in WhatsApp, Instagram and Snapchat on your PC. It never opens a chat, so nothing is marked as seen.</p>
+</section>
+<section class="tab" id="tab-ask" hidden>
+<h2>Ask Anivix</h2>
+<div class="msgs" id="chat" aria-live="polite"></div>
+<form class="composer" id="askForm">
+<div class="chips">
+<button type="button" class="chip" data-act="quick">What should I work on first?</button>
+<button type="button" class="chip" data-act="quick">Who messaged me?</button>
+<button type="button" class="chip" data-act="quick">Any college emails?</button>
+</div>
+<div class="row">
+<textarea id="askBox" rows="1" placeholder="Text Maya I'm running late" aria-label="Message to Anivix"></textarea>
+<button class="primary" type="submit">Send</button>
+</div>
+</form>
+</section>
+<section class="tab" id="tab-setup" hidden>
+<h2>Setup</h2>
+<div class="card" id="setupCard"></div>
+</section>
+</div>
+<nav class="tabs" aria-label="Sections"><div>
+<button data-tab="today">Today</button>
+<button data-tab="messages">Messages</button>
+<button data-tab="ask">Ask</button>
+<button data-tab="setup">Setup</button>
+</div></nav>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Inside Claude's viewer the page has no network, so it always shows sample data there. */
+const PREVIEW = !!window.claude;
+const store = {
+get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+del(k){ try { localStorage.removeItem(k); } catch (e) {} },
+};
+let pair = PREVIEW ? null : store.get('anivix-pair');
+let snap = null, chat = [], seen = [], waiting = false, waitTimer = null, source = null, online = false;
+/* ---------- sample data, shown until the app is paired ---------- */
+function iso(offset){ const d = new Date(); d.setDate(d.getDate() + offset); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function sampleSnap(){
+return { at: Date.now()/1000 - 480, plan_at: Date.now()/1000 - 480, more: 0, later: 2,
+plan: [ { t: 'Lab report', c: 'AP Biology', k: 'project', due: iso(-2) }, { t: 'Chapter 5 Test', c: 'Algebra 2', k: 'test', due: iso(2) },
+{ t: 'Vocab quiz', c: 'Spanish 3', k: 'quiz', due: iso(1) }, { t: 'Worksheet 4.2', c: 'Algebra 2', k: 'homework', due: iso(1) },
+{ t: 'Problem set 6', c: 'Chemistry', k: 'homework', due: iso(5) } ],
+email: { at: Date.now()/1000 - 480, text: "A college admissions office says your application is missing a transcript, due on the 20th. Your counselor moved Thursday's meeting to 2:15. I left out 11 others." },
+msgs: { at: Date.now()/1000 - 3600, text: "WhatsApp: Maya has 2 new messages. The latest asks if you're coming Saturday.\nInstagram: 1 new message from a friend.\nSnapchat: nothing new." } };
+}
+function sampleChat(){
+return [ { who: 'me', text: "Text Maya I'm running 10 minutes late" },
+{ who: 'a', text: 'Draft for Maya in Messages:\nRunning about 10 min late, sorry!\n\nNothing is sent until you tap send.', click: 'sms:+15555550100?&body=Running%20about%2010%20min%20late%2C%20sorry!' },
+{ who: 'a', title: 'Homework plan', text: 'Do first: Lab report for AP Biology (project), overdue by 2 days.\nThen: Chapter 5 Test for Algebra 2 (test), due in 2 days; Vocab quiz for Spanish 3 (quiz), due tomorrow.' } ];
+}
+/* ---------- helpers ---------- */
+function dueInfo(due){
+if (!/^\d{4}-\d{2}-\d{2}$/.test(due || '')) return { label: 'No due date', cls: 'plain' };
+const [y,m,d] = due.split('-').map(Number), t = new Date(); t.setHours(0,0,0,0);
+const days = Math.round((new Date(y, m-1, d) - t) / 864e5);
+if (days < 0) return { label: 'Overdue ' + (-days) + (days === -1 ? ' day' : ' days'), cls: 'crit' };
+if (days === 0) return { label: 'Due today', cls: 'crit' };
+if (days === 1) return { label: 'Due tomorrow', cls: 'warn' };
+if (days <= 3) return { label: 'Due in ' + days + ' days', cls: 'warn' };
+return { label: 'Due ' + new Date(y, m-1, d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }), cls: 'plain' };
+}
+const clock = secs => new Date(secs * 1000).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+const kindLabel = k => (k && k !== 'homework') ? k.charAt(0).toUpperCase() + k.slice(1) : '';
+function decodePair(code){
+try {
+const b = String(code).replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+const p = JSON.parse(atob(b + '='.repeat((4 - b.length % 4) % 4)));
+const ok = t => /^[A-Za-z0-9_-]{1,64}$/.test(t || '');
+if (/^https:\/\/[^\s\/]+$/.test(p.s) && ok(p.i) && ok(p.o) && ok(p.d)) return { s: p.s, i: p.i, o: p.o, d: p.d };
+} catch (e) {}
+return null;
+}
+/* Only links that open a chat on the phone are allowed through. */
+function safeLink(url){
+if (/^sms:[+\d]+\?&body=[^\s"<>]*$/.test(url || '')) return { href: url, label: 'Open in Messages', blank: false };
+if (/^https:\/\/wa\.me\/\d+\?text=[^\s"<>]*$/.test(url || '')) return { href: url, label: 'Open in WhatsApp', blank: true };
+return null;
+}
+/* ---------- rendering ---------- */
+function renderStatus(){
+$('#status').textContent = !pair ? 'Sample data' : online ? 'Connected' : 'Connecting…';
+const b = $('#banner');
+b.hidden = !!pair;
+b.textContent = PREVIEW ? 'Preview with sample data. The real app shows your own.' : 'Sample data. Pair with your PC in Setup to see your own.';
+}
+function renderToday(){
+const plan = (snap && snap.plan) || [], first = $('#first');
+if (!snap || !snap.plan_at) {
+first.innerHTML = '<p class="eyebrow plain">Waiting for your PC</p><h2>No plan yet</h2><p class="meta">Once Anivix has read Google Classroom on your PC, what to do first shows up here.</p>';
+} else if (!plan.length) {
+first.innerHTML = '<p class="eyebrow plain">All clear</p><h2>Nothing due this week</h2><p class="meta">Nothing is overdue or due in the next seven days.</p>';
+} else {
+const a = plan[0], d = dueInfo(a.due);
+first.innerHTML = '<p class="eyebrow">Do first</p><h2>' + esc(a.t) + '</h2>'
++ '<p class="meta">' + esc([a.c, kindLabel(a.k)].filter(Boolean).join(' · ')) + '</p>'
++ '<p class="pill ' + d.cls + '">' + d.label + '</p>'
++ '<div class="row center"><button class="primary" data-act="teach" data-t="' + esc(a.t) + '">Teach me this</button></div>';
+}
+$('#thenBlock').hidden = plan.length < 2 && !(snap && (snap.more || snap.later));
+$('#then').innerHTML = plan.slice(1).map(a => { const d = dueInfo(a.due);
+return '<div class="item"><div class="head"><h3>' + esc(a.t) + '</h3><span class="pill ' + d.cls + '">' + d.label + '</span></div>'
++ '<p class="meta">' + esc([a.c, kindLabel(a.k)].filter(Boolean).join(' · ')) + '</p></div>'; }).join('');
+const foot = [];
+if (snap && snap.more) foot.push(snap.more + ' more due this week');
+if (snap && snap.later) foot.push(snap.later + ' due later or with no date');
+$('#planFoot').textContent = foot.join(' · ');
+$('#email').innerHTML = snap && snap.email
+? '<p class="body">' + esc(snap.email.text) + '</p><p class="meta">Checked ' + esc(clock(snap.email.at)) + '</p>'
+: '<p class="meta">No email check yet. Anivix reads your unread Gmail every half hour and puts what matters here.</p>';
+if (snap && snap.at) { const stale = Date.now()/1000 - snap.at > 2 * 3600;
+$('#updated').textContent = 'Updated ' + clock(snap.at) + (stale && pair ? '. Your PC may be off or asleep.' : ''); }
+else $('#updated').textContent = '';
+}
+function renderMessages(){
+$('#msgCard').innerHTML = snap && snap.msgs
+? '<p class="body">' + esc(snap.msgs.text) + '</p><p class="meta">Checked ' + esc(clock(snap.msgs.at)) + '</p>'
+: '<p class="meta">No check yet. Tap Check now and Anivix reports who has new messages.</p>';
+}
+function renderChat(){
+const box = $('#chat');
+if (!chat.length && !waiting) { box.innerHTML = '<p class="msg note">Ask for a text draft, a lesson, your plan, or what you missed.</p>'; return; }
+box.innerHTML = chat.map(m => {
+if (m.who === 'note') return '<p class="msg note">' + esc(m.text) + '</p>';
+const link = m.who === 'a' ? safeLink(m.click) : null;
+return '<div class="msg ' + (m.who === 'me' ? 'me' : 'a') + '">' + (m.title ? '<span class="eyebrow">' + esc(m.title) + '</span>' : '') + '<span>' + esc(m.text) + '</span>'
++ (link ? '<a class="btn primary" href="' + esc(link.href) + '"' + (link.blank ? ' target="_blank" rel="noopener"' : '') + '>' + link.label + '</a>' : '') + '</div>';
+}).join('') + (waiting ? '<p class="msg a">Working on it…</p>' : '');
+if (!$('#tab-ask').hidden) window.scrollTo(0, document.body.scrollHeight);
+}
+function renderSetup(){
+const c = $('#setupCard');
+if (PREVIEW) c.innerHTML = '<h3>This is the preview</h3><p>It shows sample data so you can see the design. The real app is the <strong>index.html</strong> file in your Anivix folder. Once it is on your phone and paired, it shows your own plan, email and messages from your PC.</p>';
+else if (pair) c.innerHTML = '<h3>Paired with your PC</h3><p class="meta">Anivix answers while the PC is on and running. Requests sent while it is off are answered when it is back.</p><div class="row"><button data-act="unpair">Unpair this phone</button></div>';
+else c.innerHTML = '<h3>Pair with your PC</h3><p class="meta">Open phone_links.txt from your PC, copy the app pairing code, and paste it here. It stays on this phone.</p>'
++ '<label for="pairCode">Pairing code</label><textarea id="pairCode" rows="4" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>'
++ '<div class="row"><button class="primary" data-act="pair">Pair</button></div><p class="meta" id="pairNote" role="status"></p>';
+}
+function renderAll(){ renderStatus(); renderToday(); renderMessages(); renderChat(); renderSetup(); }
+/* ---------- talking to the PC through the relay ---------- */
+function saveChat(){ chat = chat.slice(-40); if (pair) store.set('anivix-chat', chat); }
+function say(entry){ chat.push(entry); saveChat(); renderChat(); }
+function stopWaiting(){ waiting = false; clearTimeout(waitTimer); }
+function post(text){ return fetch(pair.s + '/' + pair.i, { method: 'POST', body: 'app:' + text }).then(r => { if (!r.ok) throw new Error('relay'); }); }
+function send(text){
+text = String(text || '').trim(); if (!text) return;
+say({ who: 'me', text });
+if (!pair) { say({ who: 'note', text: PREVIEW ? 'This is a preview, so nothing was sent. In the real app your PC answers here.' : 'Pair with your PC in Setup first.' }); return; }
+waiting = true; renderChat();
+clearTimeout(waitTimer);
+waitTimer = setTimeout(() => { if (waiting) { waiting = false; say({ who: 'note', text: 'No answer yet. Your PC may be off or asleep. Your request is saved and gets answered when it is back.' }); } }, 180000);
+post(text).catch(() => { stopWaiting(); say({ who: 'note', text: "Couldn't send. Check your connection and try again." }); });
+}
+function onRelay(m){
+if (!m || (m.event && m.event !== 'message') || !m.id || seen.includes(m.id)) return;
+seen.push(m.id); seen = seen.slice(-120); store.set('anivix-seen', seen);
+if (m.topic === pair.d) {
+let s = null; try { s = JSON.parse(m.message); } catch (e) {}
+if (s && typeof s === 'object' && (!snap || (s.at || 0) >= (snap.at || 0))) { snap = s; store.set('anivix-snap', snap); renderToday(); renderMessages(); }
+return;
+}
+const text = String(m.message || '');
+if (!text || text.startsWith('Still working on it') || text.startsWith('Anivix is online')) return;
+stopWaiting();
+say({ who: 'a', text, click: m.click || '', title: m.title && m.title !== 'Anivix' ? String(m.title) : '' });
+}
+function connect(){
+if (source) { source.close(); source = null; }
+online = false;
+if (!pair) { renderStatus(); return; }
+source = new EventSource(pair.s + '/' + pair.o + ',' + pair.d + '/sse?since=3h');
+source.onopen = () => { online = true; renderStatus(); };
+source.onerror = () => { online = false; renderStatus(); };
+source.onmessage = e => { try { onRelay(JSON.parse(e.data)); } catch (err) {} };
+}
+function load(){
+if (pair) { snap = store.get('anivix-snap'); chat = store.get('anivix-chat') || []; seen = store.get('anivix-seen') || []; }
+else { snap = sampleSnap(); chat = sampleChat(); seen = []; }
+stopWaiting();
+}
+/* ---------- tabs and events ---------- */
+const TABS = ['today', 'messages', 'ask', 'setup'];
+function showTab(tab){
+if (!TABS.includes(tab)) tab = 'today';
+for (const t of TABS) $('#tab-' + t).hidden = t !== tab;
+document.querySelectorAll('nav.tabs button').forEach(b => { if (b.dataset.tab === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+if (tab === 'ask') window.scrollTo(0, document.body.scrollHeight); else window.scrollTo(0, 0);
+}
+function go(tab){ if (location.hash !== '#' + tab) location.hash = tab; showTab(tab); }
+document.addEventListener('click', e => {
+const tab = e.target.closest('[data-tab]'); if (tab) { go(tab.dataset.tab); return; }
+const b = e.target.closest('[data-act]'); if (!b) return;
+const act = b.dataset.act;
+if (act === 'teach') { go('ask'); send('Teach me what I need for ' + b.dataset.t); }
+else if (act === 'quick') { send(b.textContent); }
+else if (act === 'check-messages') { go('ask'); send('Who messaged me?'); }
+else if (act === 'refresh') {
+if (!pair) { $('#updated').textContent = PREVIEW ? 'This is sample data. The real app asks your PC to check again.' : 'Pair with your PC in Setup first.'; return; }
+$('#updated').textContent = 'Asked your PC to check again. This can take a minute or two.';
+post('__refresh__').catch(() => { $('#updated').textContent = "Couldn't reach the relay. Check your connection."; });
+}
+else if (act === 'pair') {
+const p = decodePair($('#pairCode').value);
+if (!p) { $('#pairNote').textContent = "That code didn't work. Copy the whole pairing code from phone_links.txt and paste it again."; return; }
+pair = p; store.set('anivix-pair', p); load(); renderAll(); connect(); go('today');
+}
+else if (act === 'unpair') { for (const k of ['anivix-pair', 'anivix-snap', 'anivix-chat', 'anivix-seen']) store.del(k); pair = null; load(); renderAll(); connect(); }
+});
+$('#askForm').addEventListener('submit', e => { e.preventDefault(); const box = $('#askBox'); send(box.value); box.value = ''; });
+$('#askBox').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#askForm').requestSubmit(); } });
+window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+const hr = new Date().getHours();
+$('#greet').textContent = hr < 12 ? 'Good morning.' : hr < 18 ? 'Good afternoon.' : 'Good evening.';
+load(); renderAll(); showTab(location.hash.slice(1)); connect();
+</script>
+</body>
+</html>
