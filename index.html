@@ -43,6 +43,7 @@ main{display:flex;flex-direction:column;gap:14px;max-width:640px;margin:0 auto;p
 form{display:flex;gap:8px}
 input,textarea{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--inset);border:1px solid transparent;border-radius:18px;padding:10px 14px}
 textarea{min-height:76px;width:100%}
+.btn[aria-pressed=true],.btn.live{background:var(--accent);border-color:var(--accent);color:#fff}
 details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
 </style>
 </head>
@@ -62,6 +63,8 @@ details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
     <div class="head">Ask</div>
     <div id="chat" aria-live="polite"></div>
     <div class="btns" id="quick" hidden><button class="btn primary" id="yes" type="button">Send</button><button class="btn" id="no" type="button">Cancel</button></div>
+    <div class="btns" id="voiceRow" hidden><button class="btn" id="mic" type="button">Talk</button><button class="btn" id="wake" type="button" aria-pressed="false">Hey Anivix</button></div>
+    <div class="muted" id="voiceNote"></div>
     <form id="askForm"><input id="q" autocomplete="off" placeholder="Ask, or text someone" aria-label="Ask Anivix"><button class="btn primary" type="submit">Send</button></form>
   </section>
   <section class="tile">
@@ -191,6 +194,7 @@ function onRelay(m){
   if (!text || text.startsWith('Still working on it') || text.startsWith('Anivix is online') || m.title === 'Anivix at home') return;
   waiting = false; clearTimeout(waitTimer);
   say({ who: 'a', text: text, click: m.click || '' });
+  if (voiceAsk) { voiceAsk = false; speak(text); }
 }
 function connect(){
   if (source) { source.close(); source = null; }
@@ -201,6 +205,85 @@ function connect(){
   source.onerror = () => { online = false; renderStatus(); };
   source.onmessage = e => { try { onRelay(JSON.parse(e.data)); } catch (err) {} };
 }
+/* ---------- talking: the Talk button, and "Hey Anivix" while this app is open ---------- */
+const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, wake = !!store.get('anivix-wake'), armed = false, voiceAsk = false, held = '', holdT = 0, armT = 0, talking = false, micBlocked = false;
+function skeleton(ws){
+  return ws.join('').replace(/ph/g, 'v').replace(/x/g, 'ks').replace(/ck|q|c/g, 'k').replace(/[fbp]/g, 'v').replace(/m/g, 'n').replace(/z/g, 's')
+    .replace(/[^a-z]|[aeiouyhw]/g, '').replace(/(.)\1+/g, '$1');
+}
+function distance(a, b){
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+/* If the words start with something that sounds like "hey Anivix", returns what was said after it. Otherwise null. */
+function afterWake(text){
+  const w = text.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean);
+  for (let i = 0; i < Math.min(w.length, 3); i++) {
+    if (i > 0 && !/^(hey|hay|hi|he|eh|ok|okay|yo|hello|say|they)$/.test(w[i - 1])) continue;
+    for (let n = 3; n >= 1; n--) {
+      if (i + n > w.length) continue;
+      const sk = skeleton(w.slice(i, i + n));
+      if (/^n.*k/.test(sk) && distance(sk, 'nvks') <= (i > 0 ? 1 : 0)) return w.slice(i + n).join(' ');
+    }
+  }
+  return null;
+}
+function voiceNote(){
+  $('#voiceRow').hidden = !Rec; $('#wake').setAttribute('aria-pressed', String(wake)); $('#mic').classList.toggle('live', armed);
+  $('#voiceNote').textContent = !Rec ? '' : micBlocked ? 'The microphone is blocked. Allow it for this site in Safari settings.' :
+    armed ? (held || 'Listening…') : talking ? 'Speaking…' : wake ? 'Listening for “Hey Anivix” while this app is open.' : '';
+}
+function speak(text){
+  if (!('speechSynthesis' in window)) return;
+  stopRec(); talking = true; voiceNote();
+  const u = new SpeechSynthesisUtterance(String(text).replace(/https?:\/\/\S+/g, '').replace(/Say send[^\n]*$/, '').slice(0, 700));
+  const done = () => { if (!talking) return; talking = false; voiceNote(); if (wake) startRec(); };
+  u.onend = u.onerror = done; setTimeout(done, 9000 + u.text.length * 110);
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function flushVoice(){
+  clearTimeout(holdT); clearTimeout(armT); const t = held; held = ''; armed = false;
+  if (!wake) stopRec();
+  if (t) { voiceAsk = true; send(t); }
+  voiceNote();
+}
+function arm(){ armed = true; clearTimeout(armT); armT = setTimeout(() => { if (held) flushVoice(); else { armed = false; if (!wake) stopRec(); voiceNote(); } }, 9000); voiceNote(); }
+function startRec(){
+  if (!Rec || rec || talking) return;
+  const r = rec = new Rec(); r.continuous = true; r.interimResults = true; r.lang = 'en-US';
+  r.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const res = e.results[i], text = res[0].transcript.trim();
+      if (!text) continue;
+      if (armed) {                                    /* the request itself: wait for two quiet seconds before sending */
+        clearTimeout(holdT); $('#voiceNote').textContent = (held + ' ' + text).trim();
+        if (res.isFinal) { held = (held + ' ' + text).trim(); holdT = setTimeout(flushVoice, 2000); }
+        continue;
+      }
+      if (!res.isFinal) continue;
+      const rest = afterWake(text);
+      if (rest === null) continue;
+      arm();
+      if (rest.length > 2) { held = rest; holdT = setTimeout(flushVoice, 2000); voiceNote(); }
+    }
+  };
+  r.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { micBlocked = true; wake = false; armed = false; store.set('anivix-wake', false); } };
+  r.onend = () => { if (rec === r) rec = null; if (held && armed) flushVoice(); if ((wake || armed) && !talking && !micBlocked && !document.hidden) setTimeout(startRec, 500); voiceNote(); };
+  try { r.start(); } catch (e) { rec = null; }
+  voiceNote();
+}
+function stopRec(){ if (rec) { const r = rec; rec = null; r.onend = null; try { r.abort(); } catch (e) {} } }
+/* The phone only lets a page speak after you have tapped something, so each button also "unlocks" the voice. */
+function unlockVoice(){ try { speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } catch (e) {} }
+$('#mic').onclick = () => { unlockVoice(); micBlocked = false; if (armed) return flushVoice(); held = ''; stopRec(); arm(); startRec(); };
+$('#wake').onclick = () => { unlockVoice(); micBlocked = false; wake = !wake; store.set('anivix-wake', wake); if (wake) startRec(); else { armed = false; stopRec(); } voiceNote(); };
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopRec(); else if (wake) startRec(); });
+voiceNote();
+
 $('#askForm').onsubmit = e => { e.preventDefault(); send($('#q').value); $('#q').value = ''; };
 $('#yes').onclick = () => send('send');
 $('#no').onclick = () => send('cancel');
