@@ -44,6 +44,26 @@ form{display:flex;gap:8px}
 input,textarea{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--inset);border:1px solid transparent;border-radius:18px;padding:10px 14px}
 textarea{min-height:76px;width:100%}
 .btn[aria-pressed=true],.btn.live{background:var(--accent);border-color:var(--accent);color:#fff}
+/* Theme: glass and light, to match the PC dashboard */
+:root{--bg:#05070D;--tile:rgba(15,21,36,.78);--inset:rgba(255,255,255,.06);--ink:#EAF2FF;--muted:#8EA2C2;--line:rgba(130,175,255,.22);--accent:#4DA3FF;--crit:#FF5C7A;--ok:#3DDC97;
+  --grad:linear-gradient(135deg,#2B7BFF 0%,#6C5CFF 60%,#B14DFF 100%);color-scheme:dark}
+html{background:var(--bg)}
+body{background:radial-gradient(700px 500px at 0% -5%,rgba(60,120,255,.22),transparent 60%),radial-gradient(600px 500px at 110% 105%,rgba(150,80,255,.18),transparent 60%),var(--bg);background-attachment:fixed;min-height:100vh}
+.tile{border:1px solid var(--line);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 44px rgba(0,0,0,.45)}
+.head{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#7FA6D9}
+.head span{letter-spacing:0;text-transform:none;font-size:.8rem;color:var(--muted)}
+#time{font-weight:300;background:linear-gradient(180deg,#fff 20%,#9CC8FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+#time small{-webkit-text-fill-color:var(--muted)}
+.row{border:1px solid rgba(255,255,255,.06)}
+.row.first,.msg.me,.btn.primary,.btn[aria-pressed=true],.btn.live{background:var(--grad);border-color:transparent;color:#fff}
+.btn{border-color:rgba(120,175,255,.4);background:rgba(77,163,255,.08)}
+input,textarea{border-color:rgba(130,175,255,.2)}
+#voice{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:28px;text-align:center;
+  background:rgba(5,7,13,.86);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+#orb{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#7fd4ff,#2f7bff 42%,#8a4dff 72%,#ff5fa2);box-shadow:0 0 70px rgba(90,139,255,.55)}
+#vStatus{font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+#vHeard{font-size:1.4rem;font-weight:600;min-height:1.4em;max-width:22ch}
+@media (prefers-reduced-motion:no-preference){#orb{animation:orb 1.5s ease-in-out infinite}@keyframes orb{50%{transform:scale(1.12)}}}
 details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
 </style>
 </head>
@@ -87,6 +107,12 @@ details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
     </details>
   </section>
 </main>
+<div id="voice" hidden role="dialog" aria-label="Anivix is listening">
+  <div id="orb"></div>
+  <div id="vStatus">Listening</div>
+  <div id="vHeard"></div>
+  <div class="btns"><button class="btn primary" id="vSend" type="button">Send</button><button class="btn" id="vCancel" type="button">Cancel</button></div>
+</div>
 <script>
 const $ = s => document.querySelector(s);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -232,10 +258,17 @@ function afterWake(text){
   }
   return null;
 }
+const onPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+let lastHeard = '', voiceErr = '';
+const ERRORS = { 'not-allowed': 'The microphone is blocked for this page. In Safari, tap aA in the address bar, then Website Settings, and allow the microphone.',
+  'service-not-allowed': 'Speech is turned off on this phone. Open Settings, General, Keyboard and turn on Enable Dictation. Also use Safari itself, not the home-screen icon.',
+  'audio-capture': 'No microphone was found.', 'network': 'Speech needs an internet connection.', 'language-not-supported': 'This phone does not support English speech here.' };
 function voiceNote(){
   $('#voiceRow').hidden = !Rec; $('#wake').setAttribute('aria-pressed', String(wake)); $('#mic').classList.toggle('live', armed);
-  $('#voiceNote').textContent = !Rec ? '' : micBlocked ? 'The microphone is blocked. Allow it for this site in Safari settings.' :
-    armed ? (held || 'Listening…') : talking ? 'Speaking…' : wake ? 'Listening for “Hey Anivix” while this app is open.' : '';
+  $('#voice').hidden = !armed;
+  $('#vStatus').textContent = rec ? 'Listening' : 'Starting the microphone'; $('#vHeard').textContent = held || lastHeard;
+  $('#voiceNote').textContent = !Rec ? 'Talking is not available in this browser. Open this page in Safari.' : voiceErr ? voiceErr :
+    talking ? 'Speaking…' : wake ? 'Listening for “Hey Anivix” while this app is open.' : '';
 }
 function speak(text){
   if (!('speechSynthesis' in window)) return;
@@ -246,41 +279,58 @@ function speak(text){
   speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
 function flushVoice(){
-  clearTimeout(holdT); clearTimeout(armT); const t = held; held = ''; armed = false;
+  clearTimeout(holdT); clearTimeout(armT); const t = (held || lastHeard).trim(); held = ''; lastHeard = ''; armed = false;
   if (!wake) stopRec();
   if (t) { voiceAsk = true; send(t); }
   voiceNote();
 }
-function arm(){ armed = true; clearTimeout(armT); armT = setTimeout(() => { if (held) flushVoice(); else { armed = false; if (!wake) stopRec(); voiceNote(); } }, 9000); voiceNote(); }
+function cancelVoice(){ clearTimeout(holdT); clearTimeout(armT); held = ''; lastHeard = ''; armed = false; if (!wake) stopRec(); voiceNote(); }
+function arm(){ armed = true; clearTimeout(armT); armT = setTimeout(() => { if (held || lastHeard) flushVoice(); else cancelVoice(); }, 12000); voiceNote(); }
 function startRec(){
   if (!Rec || rec || talking) return;
-  const r = rec = new Rec(); r.continuous = true; r.interimResults = true; r.lang = 'en-US';
+  const r = rec = new Rec(); r.continuous = !onPhone; r.interimResults = true; r.lang = 'en-US';
+  r.onstart = () => { voiceErr = ''; voiceNote(); };
   r.onresult = e => {
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const res = e.results[i], text = res[0].transcript.trim();
       if (!text) continue;
       if (armed) {                                    /* the request itself: wait for two quiet seconds before sending */
-        clearTimeout(holdT); $('#voiceNote').textContent = (held + ' ' + text).trim();
-        if (res.isFinal) { held = (held + ' ' + text).trim(); holdT = setTimeout(flushVoice, 2000); }
+        clearTimeout(holdT); lastHeard = (held + ' ' + text).trim(); $('#vHeard').textContent = lastHeard;
+        if (res.isFinal) { held = lastHeard; lastHeard = ''; holdT = setTimeout(flushVoice, 2000); }
         continue;
       }
+      lastHeard = text;
       if (!res.isFinal) continue;
+      lastHeard = '';
       const rest = afterWake(text);
       if (rest === null) continue;
       arm();
       if (rest.length > 2) { held = rest; holdT = setTimeout(flushVoice, 2000); voiceNote(); }
     }
   };
-  r.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { micBlocked = true; wake = false; armed = false; store.set('anivix-wake', false); } };
-  r.onend = () => { if (rec === r) rec = null; if (held && armed) flushVoice(); if ((wake || armed) && !talking && !micBlocked && !document.hidden) setTimeout(startRec, 500); voiceNote(); };
-  try { r.start(); } catch (e) { rec = null; }
+  r.onerror = e => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    voiceErr = ERRORS[e.error] || ('Voice stopped: ' + e.error + '.');
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { wake = false; store.set('anivix-wake', false); }
+    armed = false; held = ''; lastHeard = ''; voiceNote();
+  };
+  r.onend = () => {
+    if (rec === r) rec = null;
+    if (armed && (held || lastHeard)) return flushVoice();                 /* the phone stops by itself after a pause */
+    if (!armed && lastHeard) { const rest = afterWake(lastHeard); lastHeard = ''; if (rest !== null) { arm(); if (rest.length > 2) { held = rest; return flushVoice(); } } }
+    if ((wake || armed) && !talking && !voiceErr && !document.hidden) setTimeout(startRec, 400);
+    voiceNote();
+  };
+  try { r.start(); } catch (e) { rec = null; voiceErr = 'The microphone could not start: ' + (e.message || e.name) + '.'; armed = false; }
   voiceNote();
 }
 function stopRec(){ if (rec) { const r = rec; rec = null; r.onend = null; try { r.abort(); } catch (e) {} } }
-/* The phone only lets a page speak after you have tapped something, so each button also "unlocks" the voice. */
+/* The phone only lets a page speak after a tap, so the Send and Hey Anivix taps also "unlock" the voice. */
 function unlockVoice(){ try { speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } catch (e) {} }
-$('#mic').onclick = () => { unlockVoice(); micBlocked = false; if (armed) return flushVoice(); held = ''; stopRec(); arm(); startRec(); };
-$('#wake').onclick = () => { unlockVoice(); micBlocked = false; wake = !wake; store.set('anivix-wake', wake); if (wake) startRec(); else { armed = false; stopRec(); } voiceNote(); };
+$('#mic').onclick = () => { voiceErr = ''; if (armed) return flushVoice(); held = ''; lastHeard = ''; stopRec(); arm(); startRec(); };
+$('#vSend').onclick = () => { flushVoice(); unlockVoice(); };
+$('#vCancel').onclick = cancelVoice;
+$('#wake').onclick = () => { voiceErr = ''; wake = !wake; store.set('anivix-wake', wake); if (wake) { startRec(); } else { armed = false; stopRec(); unlockVoice(); } voiceNote(); };
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopRec(); else if (wake) startRec(); });
 voiceNote();
 
