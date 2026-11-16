@@ -52,7 +52,8 @@ html{background:var(--bg)}
 body{background:radial-gradient(900px 600px at 50% -25%,#1A1A1D 0%,#050506 55%,#000 100%) fixed;min-height:100vh}
 .tile{background:linear-gradient(180deg,#141416,#0B0B0C);border:1px solid var(--line);border-radius:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 2px 4px rgba(0,0,0,.5),0 24px 50px -18px rgba(0,0,0,.9)}
 .head{font-family:var(--mono);font-size:.64rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-.head b{font-family:var(--mono);letter-spacing:.34em;font-size:.72rem!important;font-weight:500}
+.head b{font-family:var(--mono);letter-spacing:.34em;font-size:.92rem!important;font-weight:600;color:#fff;display:inline-flex;align-items:center}
+.head b::before{content:"";width:13px;height:13px;border-radius:50%;margin-right:11px;background:radial-gradient(circle at 34% 28%,#fff 0,#cfcfd4 12%,#6e6e75 38%,#141416 72%);box-shadow:0 0 0 1px rgba(255,255,255,.12),0 4px 10px rgba(0,0,0,.8)}
 .head span{font-family:-apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:0;text-transform:none;font-size:.8rem;color:var(--muted)}
 #time{font-weight:200;letter-spacing:-.04em;color:#fff;text-shadow:0 12px 30px rgba(0,0,0,.9)}
 .row{background:linear-gradient(180deg,#1C1C1F,#141416);border:1px solid rgba(255,255,255,.05);border-radius:14px;box-shadow:var(--raise)}
@@ -67,15 +68,22 @@ input,textarea{background:#0A0A0B;border:1px solid rgba(255,255,255,.1);border-r
 .msg.note{background:none;box-shadow:none}
 #voice{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:28px;text-align:center;
   background:rgba(0,0,0,.86);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}
-#orb{width:140px;height:140px;border-radius:50%;position:relative;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.22) 0,rgba(255,255,255,.06) 32%,transparent 62%)}
-#orb::before,#orb::after{content:"";position:absolute;border-radius:50%}
-#orb::before{inset:0;border:1px solid rgba(255,255,255,.28);border-top-color:#fff;border-right-color:transparent}
-#orb::after{inset:20px;border:1px solid rgba(255,255,255,.16);border-bottom-color:rgba(255,255,255,.85);border-left-color:transparent}
-#voice.err #orb::before{border-top-color:var(--crit)}
+#orb{width:120px;height:120px;border-radius:50%;position:relative;filter:none!important;transform-style:preserve-3d;margin:30px;
+  background:radial-gradient(circle at 34% 28%,#FFFFFF 0,#DADADF 8%,#7A7A82 28%,#202023 56%,#050506 74%);
+  box-shadow:inset -12px -16px 30px rgba(0,0,0,.85),inset 8px 10px 20px rgba(255,255,255,.16),0 34px 60px rgba(0,0,0,.85),0 0 90px rgba(255,255,255,.07)}
+#orb::before,#orb::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+#orb::before{inset:-26px;border:1.5px solid rgba(255,255,255,.55);border-left-color:rgba(255,255,255,.08);transform:rotateX(74deg)}
+#orb::after{inset:-40px;border:1px solid rgba(255,255,255,.3);border-top-color:rgba(255,255,255,.8);transform:rotateY(70deg) rotateX(18deg)}
+#voice.err #orb::before{border-color:rgba(255,69,58,.7);border-left-color:rgba(255,69,58,.1)}
 #vStatus{font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 #vHeard{font-size:1.3rem;font-weight:300;min-height:1.4em;max-width:24ch;color:#fff}
 #voice.err #vHeard{font-size:1rem;color:var(--muted);max-width:30ch}
-@media (prefers-reduced-motion:no-preference){#orb::before{animation:spin 2.4s linear infinite}#orb::after{animation:spin 3.6s linear infinite reverse}@keyframes spin{to{transform:rotate(360deg)}}}
+@media (prefers-reduced-motion:no-preference){
+  #orb::before{animation:ringA 3s linear infinite}
+  #orb::after{animation:ringB 4.5s linear infinite}
+  @keyframes ringA{from{transform:rotateX(74deg) rotateZ(0)}to{transform:rotateX(74deg) rotateZ(360deg)}}
+  @keyframes ringB{from{transform:rotateY(70deg) rotateX(18deg) rotateZ(0)}to{transform:rotateY(70deg) rotateX(18deg) rotateZ(-360deg)}}
+}
 </style>
 </head>
 <body>
