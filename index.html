@@ -44,27 +44,36 @@ form{display:flex;gap:8px}
 input,textarea{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--inset);border:1px solid transparent;border-radius:18px;padding:10px 14px}
 textarea{min-height:76px;width:100%}
 .btn[aria-pressed=true],.btn.live{background:var(--accent);border-color:var(--accent);color:#fff}
-/* Theme: glass and light, to match the PC dashboard */
-:root{--bg:#05070D;--tile:rgba(15,21,36,.78);--inset:rgba(255,255,255,.06);--ink:#EAF2FF;--muted:#8EA2C2;--line:rgba(130,175,255,.22);--accent:#4DA3FF;--crit:#FF5C7A;--ok:#3DDC97;
-  --grad:linear-gradient(135deg,#2B7BFF 0%,#6C5CFF 60%,#B14DFF 100%);color-scheme:dark}
+/* Theme: dark, quiet and precise, to match the PC dashboard */
+:root{--bg:#07090E;--tile:#0E121A;--inset:#141925;--ink:#E8EDF5;--muted:#8792A6;--line:rgba(255,255,255,.07);--accent:#6E9BFF;--crit:#FF6B81;--ok:#4FD1A5;
+  --link:#8DB1FF;--mono:ui-monospace,"SF Mono",Menlo,monospace;color-scheme:dark}
 html{background:var(--bg)}
-body{background:radial-gradient(700px 500px at 0% -5%,rgba(60,120,255,.22),transparent 60%),radial-gradient(600px 500px at 110% 105%,rgba(150,80,255,.18),transparent 60%),var(--bg);background-attachment:fixed;min-height:100vh}
-.tile{border:1px solid var(--line);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 44px rgba(0,0,0,.45)}
-.head{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#7FA6D9}
-.head span{letter-spacing:0;text-transform:none;font-size:.8rem;color:var(--muted)}
-#time{font-weight:300;background:linear-gradient(180deg,#fff 20%,#9CC8FF);-webkit-background-clip:text;background-clip:text;color:transparent}
-#time small{-webkit-text-fill-color:var(--muted)}
-.row{border:1px solid rgba(255,255,255,.06)}
-.row.first,.msg.me,.btn.primary,.btn[aria-pressed=true],.btn.live{background:var(--grad);border-color:transparent;color:#fff}
-.btn{border-color:rgba(120,175,255,.4);background:rgba(77,163,255,.08)}
-input,textarea{border-color:rgba(130,175,255,.2)}
-#voice{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:28px;text-align:center;
-  background:rgba(5,7,13,.86);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
-#orb{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#7fd4ff,#2f7bff 42%,#8a4dff 72%,#ff5fa2);box-shadow:0 0 70px rgba(90,139,255,.55)}
-#vStatus{font-size:.75rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-#vHeard{font-size:1.4rem;font-weight:600;min-height:1.4em;max-width:22ch}
-@media (prefers-reduced-motion:no-preference){#orb{animation:orb 1.5s ease-in-out infinite}@keyframes orb{50%{transform:scale(1.12)}}}
-details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
+body{background:radial-gradient(900px 600px at 50% -25%,rgba(110,155,255,.08),transparent 70%),var(--bg);min-height:100vh}
+.tile{border:1px solid var(--line);border-radius:16px}
+.head{font-family:var(--mono);font-size:.64rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.head b{font-family:var(--mono);letter-spacing:.3em;font-size:.72rem!important;font-weight:500}
+.head span{font-family:-apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:0;text-transform:none;font-size:.8rem;color:var(--muted)}
+#time{font-weight:200;letter-spacing:-.035em;color:var(--ink)}
+.row{border:1px solid transparent;border-radius:12px}
+.row.first{background:linear-gradient(180deg,rgba(110,155,255,.16),rgba(110,155,255,.06));border-color:rgba(110,155,255,.35);color:var(--ink)}
+.row.first .n,.row.first .s,.row.first .d{color:var(--link)}
+.row .d{font-family:var(--mono);font-size:.72rem;font-weight:500}
+.msg{border-radius:14px}
+.msg.me,.btn.primary,.btn[aria-pressed=true],.btn.live{background:var(--accent);border-color:var(--accent);color:#0B1020}
+.btn{border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--ink);border-radius:10px}
+input,textarea{border:1px solid var(--line);border-radius:12px}
+.dot.on{box-shadow:0 0 0 3px rgba(79,209,165,.15)}
+#voice{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:28px;text-align:center;
+  background:rgba(5,7,11,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+#orb{width:140px;height:140px;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(110,155,255,.22) 0 30%,transparent 62%)}
+#orb::before,#orb::after{content:"";position:absolute;border-radius:50%}
+#orb::before{inset:0;border:1px solid rgba(110,155,255,.55);border-top-color:#C9DAFF;border-right-color:transparent}
+#orb::after{inset:20px;border:1px solid rgba(110,155,255,.3);border-bottom-color:rgba(201,218,255,.9);border-left-color:transparent}
+#voice.err #orb::before{border-top-color:var(--crit)}
+#vStatus{font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--link)}
+#vHeard{font-size:1.3rem;font-weight:400;min-height:1.4em;max-width:24ch}
+#voice.err #vHeard{font-size:1rem;color:var(--muted);max-width:30ch}
+@media (prefers-reduced-motion:no-preference){#orb::before{animation:spin 2.4s linear infinite}#orb::after{animation:spin 3.6s linear infinite reverse}@keyframes spin{to{transform:rotate(360deg)}}}
 </style>
 </head>
 <body>
@@ -111,7 +120,7 @@ details summary{font-size:.85rem;font-weight:600;color:var(--muted)}
   <div id="orb"></div>
   <div id="vStatus">Listening</div>
   <div id="vHeard"></div>
-  <div class="btns"><button class="btn primary" id="vSend" type="button">Send</button><button class="btn" id="vCancel" type="button">Cancel</button></div>
+  <div class="btns"><button class="btn primary" id="vSend" type="button">Send</button><button class="btn" id="vCancel" type="button">Close</button></div>
 </div>
 <script>
 const $ = s => document.querySelector(s);
@@ -259,14 +268,16 @@ function afterWake(text){
   return null;
 }
 const onPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
-let lastHeard = '', voiceErr = '';
+let lastHeard = '', voiceErr = '', showErr = false;
 const ERRORS = { 'not-allowed': 'The microphone is blocked for this page. In Safari, tap aA in the address bar, then Website Settings, and allow the microphone.',
   'service-not-allowed': 'Speech is turned off on this phone. Open Settings, General, Keyboard and turn on Enable Dictation. Also use Safari itself, not the home-screen icon.',
   'audio-capture': 'No microphone was found.', 'network': 'Speech needs an internet connection.', 'language-not-supported': 'This phone does not support English speech here.' };
 function voiceNote(){
   $('#voiceRow').hidden = !Rec; $('#wake').setAttribute('aria-pressed', String(wake)); $('#mic').classList.toggle('live', armed);
-  $('#voice').hidden = !armed;
-  $('#vStatus').textContent = rec ? 'Listening' : 'Starting the microphone'; $('#vHeard').textContent = held || lastHeard;
+  $('#voice').hidden = !(armed || showErr); $('#voice').classList.toggle('err', showErr);
+  $('#vStatus').textContent = showErr ? 'Couldn’t listen' : rec ? 'Listening' : 'Starting the microphone';
+  $('#vHeard').textContent = showErr ? voiceErr : (held || lastHeard);
+  $('#vSend').hidden = showErr;
   $('#voiceNote').textContent = !Rec ? 'Talking is not available in this browser. Open this page in Safari.' : voiceErr ? voiceErr :
     talking ? 'Speaking…' : wake ? 'Listening for “Hey Anivix” while this app is open.' : '';
 }
@@ -284,7 +295,7 @@ function flushVoice(){
   if (t) { voiceAsk = true; send(t); }
   voiceNote();
 }
-function cancelVoice(){ clearTimeout(holdT); clearTimeout(armT); held = ''; lastHeard = ''; armed = false; if (!wake) stopRec(); voiceNote(); }
+function cancelVoice(){ clearTimeout(holdT); clearTimeout(armT); held = ''; lastHeard = ''; armed = false; showErr = false; if (!wake) stopRec(); voiceNote(); }
 function arm(){ armed = true; clearTimeout(armT); armT = setTimeout(() => { if (held || lastHeard) flushVoice(); else cancelVoice(); }, 12000); voiceNote(); }
 function startRec(){
   if (!Rec || rec || talking) return;
@@ -312,7 +323,7 @@ function startRec(){
     if (e.error === 'no-speech' || e.error === 'aborted') return;
     voiceErr = ERRORS[e.error] || ('Voice stopped: ' + e.error + '.');
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { wake = false; store.set('anivix-wake', false); }
-    armed = false; held = ''; lastHeard = ''; voiceNote();
+    showErr = armed; armed = false; held = ''; lastHeard = ''; voiceNote();
   };
   r.onend = () => {
     if (rec === r) rec = null;
@@ -321,13 +332,13 @@ function startRec(){
     if ((wake || armed) && !talking && !voiceErr && !document.hidden) setTimeout(startRec, 400);
     voiceNote();
   };
-  try { r.start(); } catch (e) { rec = null; voiceErr = 'The microphone could not start: ' + (e.message || e.name) + '.'; armed = false; }
+  try { r.start(); } catch (e) { rec = null; voiceErr = 'The microphone could not start: ' + (e.message || e.name) + '.'; showErr = armed; armed = false; }
   voiceNote();
 }
 function stopRec(){ if (rec) { const r = rec; rec = null; r.onend = null; try { r.abort(); } catch (e) {} } }
 /* The phone only lets a page speak after a tap, so the Send and Hey Anivix taps also "unlock" the voice. */
 function unlockVoice(){ try { speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } catch (e) {} }
-$('#mic').onclick = () => { voiceErr = ''; if (armed) return flushVoice(); held = ''; lastHeard = ''; stopRec(); arm(); startRec(); };
+$('#mic').onclick = () => { voiceErr = ''; showErr = false; if (armed) return flushVoice(); held = ''; lastHeard = ''; stopRec(); arm(); startRec(); };
 $('#vSend').onclick = () => { flushVoice(); unlockVoice(); };
 $('#vCancel').onclick = cancelVoice;
 $('#wake').onclick = () => { voiceErr = ''; wake = !wake; store.set('anivix-wake', wake); if (wake) { startRec(); } else { armed = false; stopRec(); unlockVoice(); } voiceNote(); };
